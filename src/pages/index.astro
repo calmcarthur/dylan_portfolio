@@ -55,7 +55,8 @@ const title = `${settings.name} — ${settings.tagline ?? "Sports Media"}`;
     display: flex;
     align-items: flex-start;
     padding: clamp(24px, 5vw, 64px);
-    padding-top: clamp(56px, 12vh, 120px);
+    padding-top: clamp(72px, 12vh, 120px);
+    padding-bottom: clamp(120px, 16vh, 160px);
   }
 
   .home__overlay-inner {
@@ -64,14 +65,14 @@ const title = `${settings.name} — ${settings.tagline ?? "Sports Media"}`;
   }
 
   .home__eyebrow {
-    margin: 0 0 22px;
+    margin: 0 0 18px;
     color: rgba(255, 255, 255, 0.7);
   }
 
   .home__name {
     margin: 0;
-    font-size: clamp(64px, 13vw, 200px);
-    line-height: 0.85;
+    font-size: clamp(72px, 12vw, 188px);
+    line-height: 0.9;
     letter-spacing: -0.02em;
     color: var(--text);
     display: flex;
@@ -96,8 +97,8 @@ const title = `${settings.name} — ${settings.tagline ?? "Sports Media"}`;
   }
 
   .home__tagline {
-    margin: 18px 0 0;
-    font-size: clamp(15px, 1.6vw, 19px);
+    margin: 20px 0 0;
+    font-size: clamp(13px, 1.4vw, 17px);
     text-transform: uppercase;
     letter-spacing: 0.18em;
     color: var(--accent-warm);
@@ -105,17 +106,18 @@ const title = `${settings.name} — ${settings.tagline ?? "Sports Media"}`;
   }
 
   .home__subcopy {
-    margin: 16px 0 28px;
-    max-width: 56ch;
-    font-size: clamp(14px, 1.4vw, 16px);
+    margin: 16px 0 0;
+    max-width: 52ch;
+    font-size: clamp(13px, 1.2vw, 15px);
     color: var(--text-soft);
-    line-height: 1.6;
+    line-height: 1.55;
   }
 
   .home__cta {
     display: inline-flex;
     gap: 12px;
     flex-wrap: wrap;
+    margin-top: 36px;
   }
 
   .btn {
@@ -152,9 +154,21 @@ const title = `${settings.name} — ${settings.tagline ?? "Sports Media"}`;
     color: var(--accent-warm);
   }
 
+  @media (max-height: 720px) {
+    .home__name {
+      font-size: clamp(64px, 9vw, 136px);
+    }
+    .home__subcopy {
+      display: none;
+    }
+    .home__cta {
+      margin-top: 28px;
+    }
+  }
+
   @media (max-width: 720px) {
     .home__overlay {
-      padding-top: 60px;
+      padding-top: 56px;
     }
   }
 </style>

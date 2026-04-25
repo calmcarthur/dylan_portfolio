@@ -1,6 +1,6 @@
 # Dylan Quinn — Portfolio
 
-A small, fast portfolio site for sports media director Dylan Quinn.
+A small, fast portfolio site for Dylan Quinn.
 
 - **Frontend:** [Astro](https://astro.build) (mostly static)
 - **CMS:** [Sanity](https://www.sanity.io) (embedded studio at `/studio`)

@@ -38,6 +38,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  scroll-padding-bottom: 120px;
 }
 
 body {
@@ -98,15 +99,16 @@ button {
 .page-title {
   font-family: var(--font-display);
   text-transform: uppercase;
-  font-size: clamp(56px, 10vw, 140px);
-  line-height: 0.9;
+  font-size: clamp(48px, 7.5vw, 112px);
+  line-height: 0.92;
   letter-spacing: -0.02em;
   margin: 0;
 }
 
 .page-section {
-  padding-top: clamp(80px, 12vh, 140px);
-  padding-bottom: clamp(120px, 20vh, 200px);
+  padding-top: clamp(64px, 9vh, 112px);
+  padding-bottom: clamp(180px, 22vh, 240px);
+  min-height: calc(100vh - 80px);
 }
 
 .muted {
