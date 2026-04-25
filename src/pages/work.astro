@@ -1,0 +1,62 @@
+---
+import Base from "../layouts/Base.astro";
+import ProjectCard from "../components/ProjectCard.astro";
+import { getAllProjects, getSiteSettings } from "../lib/queries";
+
+const [settings, projects] = await Promise.all([
+  getSiteSettings(),
+  getAllProjects(),
+]);
+---
+
+<Base title={`Work — ${settings.name}`} description="Long-form sports media work by Dylan Quinn.">
+  <main class="container page-section work">
+    <header class="work__header">
+      <p class="eyebrow">Selected Work</p>
+      <h1 class="page-title">Work</h1>
+      <p class="work__intro">
+        Documentaries, branded films, and feature stories. Long-form work
+        produced over the last few years.
+      </p>
+    </header>
+
+    <section class="work__list">
+      {
+        projects.length === 0 ? (
+          <p class="muted">No projects published yet.</p>
+        ) : (
+          projects.map((project, i) => (
+            <ProjectCard project={project} index={i} />
+          ))
+        )
+      }
+    </section>
+  </main>
+</Base>
+
+<style>
+  .work {
+    padding-bottom: 220px;
+  }
+
+  .work__header {
+    max-width: 760px;
+    margin-bottom: clamp(48px, 8vh, 80px);
+  }
+
+  .work__header .eyebrow {
+    margin: 0 0 18px;
+  }
+
+  .work__intro {
+    margin: 24px 0 0;
+    color: var(--text-soft);
+    font-size: clamp(16px, 1.5vw, 18px);
+    max-width: 60ch;
+  }
+
+  .work__list {
+    display: flex;
+    flex-direction: column;
+  }
+</style>

@@ -1,0 +1,121 @@
+---
+const { pathname } = Astro.url;
+
+const links = [
+  { href: "/", label: "Home" },
+  { href: "/work", label: "Work" },
+  { href: "/shorts", label: "Shorts" },
+  { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact" },
+];
+
+function isActive(href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(href + "/");
+}
+---
+
+<nav class="floating-nav" aria-label="Primary">
+  <div class="floating-nav__inner">
+    <a class="floating-nav__brand" href="/" aria-label="Dylan Quinn home">
+      <span aria-hidden="true">DQ</span>
+    </a>
+    <ul class="floating-nav__list">
+      {
+        links.map((link) => (
+          <li>
+            <a
+              href={link.href}
+              class:list={[
+                "floating-nav__link",
+                { "is-active": isActive(link.href) },
+              ]}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</nav>
+
+<style>
+  .floating-nav {
+    position: fixed;
+    left: 50%;
+    bottom: clamp(16px, 3vh, 28px);
+    transform: translateX(-50%);
+    z-index: 50;
+    pointer-events: none;
+  }
+
+  .floating-nav__inner {
+    pointer-events: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 6px 6px 18px;
+    background: rgba(18, 18, 21, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    box-shadow:
+      0 14px 40px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+  }
+
+  .floating-nav__brand {
+    font-family: var(--font-display);
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    color: var(--text);
+    padding-right: 12px;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    margin-right: 6px;
+  }
+
+  .floating-nav__list {
+    display: inline-flex;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 2px;
+  }
+
+  .floating-nav__link {
+    display: inline-flex;
+    align-items: center;
+    padding: 9px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-soft);
+    transition: background 180ms ease, color 180ms ease;
+  }
+
+  .floating-nav__link:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .floating-nav__link.is-active {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text);
+  }
+
+  @media (max-width: 520px) {
+    .floating-nav__inner {
+      padding: 4px 6px 4px 12px;
+    }
+    .floating-nav__brand {
+      display: none;
+    }
+    .floating-nav__link {
+      padding: 8px 11px;
+      font-size: 12px;
+    }
+  }
+</style>

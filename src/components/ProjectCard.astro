@@ -1,0 +1,203 @@
+---
+import { getEmbedUrl, imageUrl } from "../lib/media";
+import type { Project } from "../lib/types";
+
+interface Props {
+  project: Project;
+  index?: number;
+}
+
+const { project, index = 0 } = Astro.props;
+const embedUrl = getEmbedUrl(project.videoUrl);
+const thumb =
+  imageUrl(project.thumbnail, { width: 1600, quality: 80 }) ??
+  project.thumbnail?.url;
+const meta = [project.client, project.year ? String(project.year) : null]
+  .filter(Boolean)
+  .join(" — ");
+const linkOut = project.externalUrl || project.videoUrl;
+---
+
+<article class="project-card" id={project.slug}>
+  <div class="project-card__index">
+    <span>{String(index + 1).padStart(2, "0")}</span>
+  </div>
+
+  <div class="project-card__media">
+    {
+      embedUrl ? (
+        <div class="project-card__video">
+          <iframe
+            src={embedUrl}
+            title={project.title}
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+            referrerpolicy="strict-origin-when-cross-origin"
+          />
+        </div>
+      ) : thumb ? (
+        <a
+          class="project-card__thumb"
+          href={linkOut ?? "#"}
+          target={linkOut ? "_blank" : undefined}
+          rel={linkOut ? "noopener noreferrer" : undefined}
+        >
+          <img src={thumb} alt={project.title} loading="lazy" />
+        </a>
+      ) : null
+    }
+  </div>
+
+  <div class="project-card__body">
+    {meta && <p class="eyebrow project-card__meta">{meta}</p>}
+    <h2 class="project-card__title">{project.title}</h2>
+    {project.role && <p class="project-card__role">{project.role}</p>}
+    {
+      project.shortDescription && (
+        <p class="project-card__desc">{project.shortDescription}</p>
+      )
+    }
+    {
+      linkOut && !embedUrl && (
+        <a
+          class="project-card__link"
+          href={linkOut}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Watch <span aria-hidden="true">→</span>
+        </a>
+      )
+    }
+  </div>
+</article>
+
+<style>
+  .project-card {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    grid-template-rows: auto auto;
+    gap: 24px 32px;
+    padding: 48px 0;
+    border-top: 1px solid var(--line-soft);
+  }
+
+  .project-card:first-of-type {
+    border-top: none;
+    padding-top: 8px;
+  }
+
+  .project-card__index {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    color: var(--text-dim);
+    font-family: var(--font-display);
+    font-size: 18px;
+    letter-spacing: 0.04em;
+  }
+
+  .project-card__media {
+    grid-column: 2;
+    grid-row: 1;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--bg-card);
+    border: 1px solid var(--line-soft);
+  }
+
+  .project-card__video {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+  }
+  .project-card__video iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .project-card__thumb {
+    display: block;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+  }
+  .project-card__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 600ms ease;
+  }
+  .project-card__thumb:hover img {
+    transform: scale(1.02);
+  }
+
+  .project-card__body {
+    grid-column: 2;
+    grid-row: 2;
+    max-width: 64ch;
+  }
+
+  .project-card__meta {
+    margin: 0 0 10px;
+  }
+
+  .project-card__title {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    font-size: clamp(32px, 4vw, 56px);
+    line-height: 0.95;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+
+  .project-card__role {
+    margin: 0 0 14px;
+    color: var(--accent-warm);
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .project-card__desc {
+    margin: 0 0 18px;
+    color: var(--text-soft);
+    font-size: clamp(14px, 1.3vw, 16px);
+    line-height: 1.6;
+  }
+
+  .project-card__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text);
+    border-bottom: 1px solid var(--text);
+    padding-bottom: 2px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 600;
+  }
+  .project-card__link:hover {
+    color: var(--accent-warm);
+    border-color: var(--accent-warm);
+  }
+
+  @media (max-width: 720px) {
+    .project-card {
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+    .project-card__index {
+      grid-column: 1;
+      grid-row: auto;
+    }
+    .project-card__media,
+    .project-card__body {
+      grid-column: 1;
+    }
+  }
+</style>

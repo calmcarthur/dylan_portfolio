@@ -1,0 +1,276 @@
+---
+import { imageUrl } from "../lib/media";
+import type { Project } from "../lib/types";
+
+interface Props {
+  projects: Project[];
+}
+
+const { projects } = Astro.props;
+
+const slides = projects.slice(0, 5).map((p) => ({
+  title: p.title,
+  client: p.client ?? "",
+  role: p.role ?? "",
+  year: p.year ?? "",
+  href: p.slug ? `/work#${p.slug}` : "/work",
+  image:
+    imageUrl(p.thumbnail, { width: 1400, quality: 80 }) ?? p.thumbnail?.url,
+}));
+---
+
+<div class="hero-showcase" data-hero>
+  <div class="hero-showcase__media" aria-hidden="true">
+    {
+      slides.map((slide, i) => (
+        <div
+          class:list={["hero-slide", { "is-active": i === 0 }]}
+          data-slide-index={i}
+          style={slide.image ? `background-image: url('${slide.image}')` : ""}
+        />
+      ))
+    }
+    <div class="hero-showcase__scrim"></div>
+  </div>
+
+  <div class="hero-showcase__panel">
+    <div class="hero-showcase__panel-head">
+      <p class="eyebrow hero-showcase__count">
+        <span data-current>01</span>
+        <span class="hero-showcase__count-sep">/</span>
+        <span>{String(slides.length).padStart(2, "0")}</span>
+      </p>
+
+      <div class="hero-showcase__dots" role="tablist" aria-label="Featured work">
+        {
+          slides.map((_, i) => (
+            <button
+              type="button"
+              class:list={["hero-dot", { "is-active": i === 0 }]}
+              data-dot-index={i}
+              aria-label={`Show featured work ${i + 1}`}
+            />
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="hero-showcase__cards">
+      {
+        slides.map((slide, i) => (
+          <a
+            href={slide.href}
+            class:list={["hero-card", { "is-active": i === 0 }]}
+            data-card-index={i}
+          >
+            <p class="hero-card__meta">
+              <span>{slide.client || "Selected Work"}</span>
+              {slide.year && <span>{slide.year}</span>}
+            </p>
+            <h3 class="hero-card__title">{slide.title}</h3>
+            {slide.role && <p class="hero-card__role">{slide.role}</p>}
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</div>
+
+<script>
+  const root = document.querySelector<HTMLElement>("[data-hero]");
+  if (root) {
+    const slides = root.querySelectorAll<HTMLElement>(".hero-slide");
+    const cards = root.querySelectorAll<HTMLElement>(".hero-card");
+    const dots = root.querySelectorAll<HTMLButtonElement>(".hero-dot");
+    const counter = root.querySelector<HTMLElement>("[data-current]");
+    const total = slides.length;
+
+    if (total > 1) {
+      let active = 0;
+      const setActive = (next: number) => {
+        active = (next + total) % total;
+        slides.forEach((el, i) =>
+          el.classList.toggle("is-active", i === active),
+        );
+        cards.forEach((el, i) =>
+          el.classList.toggle("is-active", i === active),
+        );
+        dots.forEach((el, i) =>
+          el.classList.toggle("is-active", i === active),
+        );
+        if (counter) counter.textContent = String(active + 1).padStart(2, "0");
+      };
+
+      let timer = window.setInterval(() => setActive(active + 1), 6000);
+      const restart = () => {
+        window.clearInterval(timer);
+        timer = window.setInterval(() => setActive(active + 1), 6000);
+      };
+
+      dots.forEach((dot, i) =>
+        dot.addEventListener("click", () => {
+          setActive(i);
+          restart();
+        }),
+      );
+
+      const reduce = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      if (reduce) window.clearInterval(timer);
+    }
+  }
+</script>
+
+<style>
+  .hero-showcase {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    min-height: 640px;
+    overflow: hidden;
+  }
+
+  .hero-showcase__media {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .hero-slide {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    background-color: #0a0a0b;
+    opacity: 0;
+    transform: scale(1.04);
+    transition: opacity 1100ms ease, transform 8000ms ease;
+  }
+  .hero-slide.is-active {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .hero-showcase__scrim {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(
+        100deg,
+        rgba(8, 8, 10, 0.95) 0%,
+        rgba(8, 8, 10, 0.6) 38%,
+        rgba(8, 8, 10, 0.2) 62%,
+        rgba(8, 8, 10, 0.65) 100%
+      ),
+      linear-gradient(
+        180deg,
+        rgba(8, 8, 10, 0.2) 0%,
+        rgba(8, 8, 10, 0) 30%,
+        rgba(8, 8, 10, 0) 70%,
+        rgba(8, 8, 10, 0.85) 100%
+      );
+  }
+
+  .hero-showcase__panel {
+    position: absolute;
+    right: clamp(20px, 5vw, 64px);
+    bottom: clamp(96px, 14vh, 140px);
+    z-index: 2;
+    width: min(420px, 90vw);
+  }
+
+  .hero-showcase__panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .hero-showcase__count {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  .hero-showcase__count-sep {
+    margin: 0 6px;
+    color: rgba(255, 255, 255, 0.35);
+  }
+
+  .hero-showcase__cards {
+    position: relative;
+    min-height: 132px;
+  }
+
+  .hero-card {
+    position: absolute;
+    inset: 0;
+    display: block;
+    padding: 22px 24px;
+    border-radius: var(--radius-md);
+    background: rgba(15, 15, 17, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    color: var(--text);
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+    transition: opacity 600ms ease, transform 600ms ease;
+  }
+  .hero-card.is-active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .hero-card__meta {
+    display: flex;
+    justify-content: space-between;
+    margin: 0 0 10px;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .hero-card__title {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    font-size: clamp(24px, 3vw, 32px);
+    line-height: 0.96;
+    margin: 0 0 8px;
+  }
+
+  .hero-card__role {
+    margin: 0;
+    color: var(--text-soft);
+    font-size: 14px;
+  }
+
+  .hero-showcase__dots {
+    display: inline-flex;
+    gap: 8px;
+  }
+
+  .hero-dot {
+    appearance: none;
+    background: rgba(255, 255, 255, 0.18);
+    border: none;
+    width: 22px;
+    height: 3px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 200ms ease, width 200ms ease;
+  }
+  .hero-dot.is-active {
+    background: var(--text);
+    width: 36px;
+  }
+
+  @media (max-width: 900px) {
+    .hero-showcase__panel {
+      display: none;
+    }
+  }
+</style>

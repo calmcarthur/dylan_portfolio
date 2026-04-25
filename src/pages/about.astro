@@ -1,0 +1,161 @@
+---
+import Base from "../layouts/Base.astro";
+import { getSiteSettings } from "../lib/queries";
+import { imageUrl } from "../lib/media";
+
+const settings = await getSiteSettings();
+const portrait =
+  imageUrl(settings.aboutPortrait, { width: 900, quality: 85 }) ??
+  settings.aboutPortrait?.url;
+
+const fallbackBio = [
+  "Dylan Quinn is a sports media director and cinematographer based in the United States.",
+  "His work focuses on the moments around the game — the quiet pre-dawn hours, the long bus rides, the post-whistle stillness — and the people who carry them.",
+  "Recent collaborators include national outlets and brands working in football, basketball, soccer, and endurance sports.",
+];
+
+const bioParagraphs = settings.aboutBio
+  ? settings.aboutBio
+      .split(/\n\s*\n/)
+      .map((p) => p.trim())
+      .filter(Boolean)
+  : fallbackBio;
+---
+
+<Base title={`About — ${settings.name}`} description="About Dylan Quinn.">
+  <main class="container page-section about">
+    <div class="about__grid">
+      <div class="about__copy">
+        <p class="eyebrow">About</p>
+        <h1 class="page-title about__name">{settings.name}</h1>
+        {
+          settings.tagline && (
+            <p class="about__tagline">{settings.tagline}</p>
+          )
+        }
+
+        <div class="about__bio">
+          {bioParagraphs.map((p) => <p>{p}</p>)}
+        </div>
+
+        {
+          settings.selectedClients && settings.selectedClients.length > 0 && (
+            <section class="about__clients">
+              <h2 class="about__subtitle">Selected Clients</h2>
+              <ul>
+                {settings.selectedClients.map((c) => <li>{c}</li>)}
+              </ul>
+            </section>
+          )
+        }
+      </div>
+
+      <aside class="about__portrait">
+        {
+          portrait ? (
+            <img src={portrait} alt={settings.name} />
+          ) : (
+            <div class="about__portrait-placeholder" aria-hidden="true" />
+          )
+        }
+      </aside>
+    </div>
+  </main>
+</Base>
+
+<style>
+  .about {
+    padding-bottom: 220px;
+  }
+
+  .about__grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: clamp(40px, 6vw, 80px);
+    align-items: start;
+  }
+
+  .about__copy .eyebrow {
+    margin: 0 0 16px;
+  }
+
+  .about__name {
+    margin: 0;
+  }
+
+  .about__tagline {
+    margin: 18px 0 32px;
+    color: var(--accent-warm);
+    font-size: clamp(16px, 1.6vw, 18px);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-weight: 600;
+  }
+
+  .about__bio {
+    color: var(--text-soft);
+    font-size: clamp(15px, 1.4vw, 17px);
+    line-height: 1.7;
+  }
+
+  .about__bio p {
+    margin: 0 0 16px;
+  }
+
+  .about__clients {
+    margin-top: 56px;
+  }
+
+  .about__subtitle {
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    font-weight: 600;
+    margin: 0 0 16px;
+  }
+
+  .about__clients ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 24px;
+    color: var(--text);
+    font-size: 14px;
+  }
+
+  .about__portrait {
+    position: sticky;
+    top: 60px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--bg-card);
+    border: 1px solid var(--line-soft);
+    aspect-ratio: 4 / 5;
+  }
+
+  .about__portrait img,
+  .about__portrait-placeholder {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .about__portrait-placeholder {
+    background: linear-gradient(160deg, #1a1a1d 0%, #0f0f12 100%);
+  }
+
+  @media (max-width: 900px) {
+    .about__grid {
+      grid-template-columns: 1fr;
+    }
+    .about__portrait {
+      position: relative;
+      top: auto;
+      max-width: 480px;
+    }
+  }
+</style>

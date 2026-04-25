@@ -1,0 +1,209 @@
+---
+import Base from "../layouts/Base.astro";
+import ShortCard from "../components/ShortCard.astro";
+import { getAllShorts, getSiteSettings } from "../lib/queries";
+
+const [settings, shorts] = await Promise.all([
+  getSiteSettings(),
+  getAllShorts(),
+]);
+
+const handle = settings.instagramHandle
+  ? `@${settings.instagramHandle}`
+  : `@${settings.name.replace(/\s+/g, "").toLowerCase()}`;
+---
+
+<Base
+  title={`Shorts — ${settings.name}`}
+  description="Short-form work and social posts by Dylan Quinn."
+>
+  <main class="container page-section shorts">
+    <header class="shorts__header">
+      <p class="eyebrow">Short-Form</p>
+      <h1 class="page-title">{handle}</h1>
+      <p class="shorts__intro">
+        Recent Instagram, TikTok, and YouTube Shorts. Tap any card to play.
+      </p>
+    </header>
+
+    {
+      shorts.length === 0 ? (
+        <p class="muted">No shorts published yet.</p>
+      ) : (
+        <section class="shorts__grid">
+          {shorts.map((short) => <ShortCard short={short} />)}
+        </section>
+      )
+    }
+  </main>
+</Base>
+
+<script>
+  type Platform = "instagram" | "tiktok" | "youtube";
+
+  let igLoaded = false;
+  let tiktokLoaded = false;
+
+  function ensureScript(src: string, id: string) {
+    if (document.getElementById(id)) return;
+    const s = document.createElement("script");
+    s.src = src;
+    s.async = true;
+    s.id = id;
+    document.body.appendChild(s);
+  }
+
+  function loadInstagram() {
+    if (igLoaded) {
+      // @ts-expect-error - Instagram global injected by their script
+      window.instgrm?.Embeds?.process?.();
+      return;
+    }
+    igLoaded = true;
+    ensureScript("https://www.instagram.com/embed.js", "ig-embed-script");
+  }
+
+  function loadTikTok() {
+    if (tiktokLoaded) return;
+    tiktokLoaded = true;
+    ensureScript("https://www.tiktok.com/embed.js", "tt-embed-script");
+  }
+
+  function getTikTokId(url: string): string | null {
+    try {
+      const u = new URL(url);
+      const parts = u.pathname.split("/").filter(Boolean);
+      const idx = parts.indexOf("video");
+      if (idx >= 0 && parts[idx + 1]) return parts[idx + 1];
+    } catch {
+      return null;
+    }
+    return null;
+  }
+
+  function play(card: HTMLElement) {
+    const platform = card.dataset.platform as Platform;
+    const url = card.dataset.url ?? "";
+    const youTubeId = card.dataset.youtube ?? "";
+    const media = card.querySelector<HTMLElement>("[data-media]");
+    if (!media) return;
+
+    card.classList.add("is-playing");
+
+    const wrap = document.createElement("div");
+    wrap.className = "short-card__embed";
+
+    if (platform === "youtube") {
+      if (!youTubeId) {
+        window.open(url, "_blank", "noopener,noreferrer");
+        card.classList.remove("is-playing");
+        return;
+      }
+      const iframe = document.createElement("iframe");
+      iframe.src = `https://www.youtube-nocookie.com/embed/${youTubeId}?autoplay=1&rel=0`;
+      iframe.allow =
+        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+      iframe.setAttribute("allowfullscreen", "");
+      iframe.referrerPolicy = "strict-origin-when-cross-origin";
+      iframe.title = "YouTube Short";
+      wrap.appendChild(iframe);
+      media.appendChild(wrap);
+      return;
+    }
+
+    if (platform === "instagram") {
+      const bq = document.createElement("blockquote");
+      bq.className = "instagram-media";
+      bq.setAttribute("data-instgrm-captioned", "");
+      bq.setAttribute("data-instgrm-permalink", url);
+      bq.setAttribute("data-instgrm-version", "14");
+      bq.style.background = "#000";
+      bq.style.margin = "0";
+      bq.style.padding = "0";
+      bq.style.minWidth = "100%";
+      wrap.appendChild(bq);
+      media.appendChild(wrap);
+      loadInstagram();
+      return;
+    }
+
+    if (platform === "tiktok") {
+      const id = getTikTokId(url);
+      if (!id) {
+        window.open(url, "_blank", "noopener,noreferrer");
+        card.classList.remove("is-playing");
+        return;
+      }
+      const bq = document.createElement("blockquote");
+      bq.className = "tiktok-embed";
+      bq.setAttribute("cite", url);
+      bq.setAttribute("data-video-id", id);
+      bq.style.maxWidth = "100%";
+      bq.style.minWidth = "100%";
+      bq.style.margin = "0";
+      wrap.appendChild(bq);
+      media.appendChild(wrap);
+      loadTikTok();
+      return;
+    }
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-short]").forEach((card) => {
+    const btn = card.querySelector<HTMLButtonElement>("[data-play]");
+    btn?.addEventListener("click", (e) => {
+      e.preventDefault();
+      play(card);
+    });
+  });
+</script>
+
+<style>
+  .shorts {
+    padding-bottom: 220px;
+  }
+
+  .shorts__header {
+    margin-bottom: clamp(36px, 6vh, 60px);
+    max-width: 760px;
+  }
+
+  .shorts__header .eyebrow {
+    margin: 0 0 16px;
+  }
+
+  .shorts__header .page-title {
+    font-size: clamp(44px, 7vw, 96px);
+    text-transform: lowercase;
+    letter-spacing: -0.02em;
+  }
+
+  .shorts__intro {
+    margin: 24px 0 0;
+    color: var(--text-soft);
+    max-width: 60ch;
+  }
+
+  .shorts__grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  @media (max-width: 1100px) {
+    .shorts__grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 820px) {
+    .shorts__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 520px) {
+    .shorts__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
